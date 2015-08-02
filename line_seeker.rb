@@ -1,16 +1,11 @@
 
 class LineSeeker < Sinatra::Base
   def initialize(app = nil, params = {})
-    super(app)
-    @lines_array = []
+    @file_name = params[:file_name]
+    @lines_hash = {}
     @count = 0
-    @files = Dir.glob('temp/*').sort
-    @files.each do |item|
-      next if item == '.' || item == '..'
-      file = File.new(item)
-      @lines_array << file.each_line
-      @count += file.each_line.count
-    end
+    initialize_files
+    super(app)
   end
 
   get '/lines/:line' do |n|
@@ -25,13 +20,33 @@ class LineSeeker < Sinatra::Base
 
   private
 
-  def get_line(line)
+  def initialize_files
+    i = 0
+    @files = Dir.glob('temp/*').sort
+    @files.each do |item|
+      next if item == '.' || item == '..'
+      @lines_hash[i] = item
+      i += 1
+    end
+    @count = %x{wc -l "#{@file_name}"}.split[0].to_i
+  end
+
+  def get_file(line)
     if line % 10_000 == 0
-      @lines_array[line / 10_000 - 1].rewind
-      "#{@lines_array[line / 10_000 - 1].take(10_000).last}"
+      @lines_hash[line / 10_000 - 1]
     else
-      @lines_array[line / 10_000].rewind
-      "#{@lines_array[line / 10_000].take(line % 10_000).last}"
+      @lines_hash[line / 10_000]
+    end
+  end
+
+  def get_line(line)
+    file = get_file(line)
+    File.open(file) do |f|
+      if line % 10_000 == 0
+        "#{f.each_line.take(10_000).last}"
+      else
+        "#{f.each_line.take(line % 10_000).last}"
+      end
     end
   end
 end
