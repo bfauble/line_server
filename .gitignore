@@ -1,0 +1,5 @@
+/temp/*
+.ruby-gemset
+.ruby-version
+test.rb
+test.txt
