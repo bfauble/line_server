@@ -10,7 +10,11 @@ class LineSeeker < Sinatra::Base
 
   get '/lines/:line' do |n|
     line = Integer(n) rescue nil
-    if line.nil? || line > @count
+    if line.nil? || line < 1
+      status 415
+      'Status 415: The server is refusing to service the request because the entity of the
+      request is in a format not supported by the requested resource for the requested method.'
+    elsif line > @count
       status 413
       'Status 413: Request Entity Too Large'
     else
