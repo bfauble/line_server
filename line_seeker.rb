@@ -13,7 +13,7 @@ class LineSeeker < Sinatra::Base
     end
   end
 
-  get '/test/:line' do |n|
+  get '/lines/:line' do |n|
     line = Integer(n) rescue nil
     if line.nil? || line > @count
       status 413
